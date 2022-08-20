@@ -1,3 +1,4 @@
+# coding=utf-8
 import json
 import numpy as np
 import pandas as pd
@@ -8,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score
 import pickle
+import nltk
+nltk.download('punkt')
 
 def clean_text(text):
     cleaned_text = re.sub('[^А-Яа-яA-Za-z0-9]+', ' ', text)
