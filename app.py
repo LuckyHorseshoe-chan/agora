@@ -5,8 +5,7 @@ import json
 import requests
 import pandas as pd
 
-import joblib
-import gzip
+import pickle
 
 import nltk
 nltk.download('punkt')
@@ -62,8 +61,8 @@ def add_product():
       vec = CountVectorizer()
       text = vec.fit_transform([props])
 
-      model = joblib.load(open('agora.dat', 'rb'))
-      result = compare(model, text)
+      model = pickle.load(open('model.sav', 'rb'))
+      result = model.predict(text)
     except ValueError:
       return jsonify({"status":"Bad request"}), 400
 
