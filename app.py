@@ -4,6 +4,8 @@ import re
 import json
 import requests
 import pandas as pd
+from copy import deepcopy
+from train_model import vec
 
 import pickle
 
@@ -14,6 +16,10 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 
 from flask import Flask, request, jsonify
+from fastapi import FastAPI
+
+from datetime import datetime
+import time
 # , make_response
 
 # from flask_cors import CORS, cross_origin
@@ -31,41 +37,36 @@ def clean_text(text):
   text = ' '.join(tokens)
   return text
 
-app = Flask(__name__)
+app = FastAPI()
 
 # cors = CORS(app)
 # app.config['CORS_HEADERS'] = 'Content-Type'
 
-@app.route("/", methods = ["POST"])
-def add_product():
-  with app.app_context():
-    if not request.get_json() or not "is_reference" in request.json:
-      return jsonify({"status":"Bad request"}), 400
-    is_reference = request.get_json()["is_reference"]
-    if is_reference:
-        return jsonify(template='None')
-
-    if not "name" in request.json:
-      return jsonify({"status":"Bad request"}), 400
-    name = request.get_json()["name"]
-    new_name = clean_text(name)
-
-    if not "props" in request.json:
-      return jsonify({"status":"Bad request"}), 400
-    props = request.get_json()["props"]
-
-#    new_props = ' '.join(props)
-    props = new_name + ' ' + clean_text(props)
-
-    try:
-      vec = CountVectorizer()
-      text = vec.fit_transform([props])
+@app.post("/id")
+def add_product(data: list):
+  ts1 = datetime.timestamp(datetime.now())
+  cleaned_data = deepcopy(data)
+  for i, elem in enumerate(cleaned_data):
+    prop_str = ' '.join(elem['props'])
+    prop_str = elem['name'] + ' ' + prop_str
+    elem['props'] = clean_text(prop_str)
+  cleaned_data = pd.DataFrame(cleaned_data)
+  X = cleaned_data['props']
+  try:
+      X_bow = vec.transform(X)
 
       model = pickle.load(open('model.sav', 'rb'))
-      result = model.predict(text)
-    except ValueError:
+      y_pred = model.predict(X_bow)
+      probas = model.predict_proba(X_bow)
+      result = []
+      for i, elem in enumerate(probas):
+        if max(elem) < 0.5:
+          y_pred[i] = None
+        result.append({"id": cleaned_data['id'][i], "reference_id": y_pred[i]})
+        
+  except ValueError:
       return jsonify({"status":"Bad request"}), 400
+  ts2 = datetime.timestamp(datetime.now())
+  print(ts2-ts1)
 
-    message = {'template': result}
-
-    return jsonify(message)
+  return result

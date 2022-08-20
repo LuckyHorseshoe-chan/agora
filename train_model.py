@@ -4,9 +4,10 @@ import numpy as np
 import pandas as pd
 from nltk.tokenize import word_tokenize
 import re
+from copy import deepcopy
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score
 import pickle
 import nltk
@@ -23,34 +24,31 @@ f = open('agora_hack_products.json')
 data = json.load(f)
 f.close()
 
-cleaned_data = data.copy()
-samples = []
-products = []
-for i in range(len(cleaned_data)):
-  prop_str = ' '.join(cleaned_data[i]['props'])
-  prop_str = cleaned_data[i]['name'] + ' ' + prop_str
-  cleaned_data[i]['props'] = clean_text(prop_str)
-  if cleaned_data[i]['is_reference']:
-    samples.append(cleaned_data[i])
-    samples[-1]['reference_id'] = samples[-1]['product_id']
-  else:
-    products.append(cleaned_data[i])
+cleaned_data = deepcopy(data)
+for i, elem in enumerate(cleaned_data):
+  prop_str = ' '.join(elem['props'])
+  prop_str = elem['name'] + ' ' + prop_str
+  elem['props'] = clean_text(prop_str)
+  if elem['is_reference']:
+    elem['reference_id'] = elem['product_id']
+cleaned_data = pd.DataFrame(cleaned_data)
 
-products_data = pd.DataFrame(products)
-samples_data = pd.DataFrame(samples)
+X = cleaned_data['props']
+y = cleaned_data['reference_id'].values
 
-X = products_data['props']
-y = products_data['reference_id'].values
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-X_train, y_train = X_train.append(samples_data['props']), np.concatenate((y_train, samples_data['reference_id'].values))
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y)
 
 vec = CountVectorizer()
 
 X_train_bow = vec.fit_transform(X_train)
 X_test_bow = vec.transform(X_test)
 
-clf = MultinomialNB()
+f = open("test.txt", "w")
+f.write(X_test.to_string())
+f.close()
+
+
+clf = MLPClassifier()
 clf.fit(X_train_bow, y_train)
 
 y_pred = clf.predict(X_test_bow)
