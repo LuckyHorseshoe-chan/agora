@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 import pickle
-from funcs import clean_text, modify_props
+from funcs import modify_props
 import nltk
 nltk.download('punkt')
 

@@ -6,7 +6,7 @@ import requests
 import pandas as pd
 from copy import deepcopy
 from train_model import vec
-from funcs import clean_text, modify_props
+from funcs import modify_props
 
 import pickle
 
