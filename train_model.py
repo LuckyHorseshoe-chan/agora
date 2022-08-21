@@ -6,7 +6,6 @@ from copy import deepcopy
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import accuracy_score
 import pickle
 from funcs import clean_text, modify_props
 import nltk

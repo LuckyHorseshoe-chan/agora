@@ -17,14 +17,8 @@ from fastapi import FastAPI
 
 from datetime import datetime
 import time
-# , make_response
-
-# from flask_cors import CORS, cross_origin
 
 app = FastAPI()
-
-# cors = CORS(app)
-# app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.post("/id")
 def add_product(data: list):
