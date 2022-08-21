@@ -13,7 +13,6 @@ import pickle
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 
-from flask import Flask, request, jsonify
 from fastapi import FastAPI
 
 from datetime import datetime
@@ -47,7 +46,7 @@ def add_product(data: list):
         result.append({"id": cleaned_data['id'][i], "reference_id": y_pred[i]})
         
   except ValueError:
-      return jsonify({"status":"Bad request"}), 400
+      return {"status":"Bad request"}, 400
   ts2 = datetime.timestamp(datetime.now())
   print(ts2-ts1)
 
