@@ -6,11 +6,9 @@ import requests
 import pandas as pd
 from copy import deepcopy
 from train_model import vec
+from funcs import clean_text, modify_props
 
 import pickle
-
-import nltk
-nltk.download('punkt')
 
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
@@ -24,19 +22,6 @@ import time
 
 # from flask_cors import CORS, cross_origin
 
-
-def compare(model, X):
-  prediction = model.predict(X)
-  return prediction
-
-
-def clean_text(text):
-  cleaned_text = re.sub('[^А-Яа-яA-Za-z0-9]+', ' ', text)
-  cleaned_text = cleaned_text.lower()
-  tokens = word_tokenize(cleaned_text)
-  text = ' '.join(tokens)
-  return text
-
 app = FastAPI()
 
 # cors = CORS(app)
@@ -46,10 +31,7 @@ app = FastAPI()
 def add_product(data: list):
   ts1 = datetime.timestamp(datetime.now())
   cleaned_data = deepcopy(data)
-  for i, elem in enumerate(cleaned_data):
-    prop_str = ' '.join(elem['props'])
-    prop_str = elem['name'] + ' ' + prop_str
-    elem['props'] = clean_text(prop_str)
+  cleaned_data = modify_props(cleaned_data)
   cleaned_data = pd.DataFrame(cleaned_data)
   X = cleaned_data['props']
   try:
